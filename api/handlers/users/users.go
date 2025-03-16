@@ -36,6 +36,7 @@ func (h UsersHandler) PostUsersV1(c *gin.Context) {
 	var req UsersReq
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	// create a list of all the user names and join them with a comma
@@ -47,7 +48,9 @@ func (h UsersHandler) PostUsersV1(c *gin.Context) {
 	err := h.airflowCli.PostVariables(c.Request.Context(), airflow.UserVariableKey, val)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.IndentedJSON(http.StatusCreated, req)
+	return
 }

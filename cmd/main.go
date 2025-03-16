@@ -45,7 +45,7 @@ type HandlerCfg struct {
 func initHandlers() []HandlerCfg {
 
 	// TODO: Don't init the client with hardcoded values
-	aifrlowCli := airflow.NewAirflowCli("localhost:8080", "http", "test", "password")
+	aifrlowCli := airflow.NewAirflowCli("localhost:8080", "http", "airflow", "airflow")
 
 	ret := []HandlerCfg{}
 
