@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	UserVariableKey = "users"
+	UserVariableKey         = "users"
+	PlayerScoresVariableKey = "player_scores"
 )
 
 type AirflowClient struct {
@@ -50,4 +51,24 @@ func (c AirflowClient) PostVariables(ctx context.Context, key, value string) err
 	}
 
 	return nil
+}
+
+func (c AirflowClient) GetVariable(ctx context.Context, key string) (string, error) {
+	ctx = context.WithValue(ctx, airflow.ContextBasicAuth, c.Creds)
+	variable, resp, err := c.Cli.VariableApi.GetVariable(ctx, key).Execute()
+	if resp != nil {
+		if resp.StatusCode != 200 {
+			return "", fmt.Errorf("error: %s", resp.Status)
+		}
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	if variable.Value == nil {
+		return "", fmt.Errorf("variable %s not found", key)
+	}
+
+	return *variable.Value, nil
 }

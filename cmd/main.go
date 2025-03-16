@@ -56,6 +56,12 @@ func initHandlers() []HandlerCfg {
 		Path:          "/users",
 	})
 
+	ret = append(ret, HandlerCfg{
+		Func:          usersHandler.GetUserScoreV1,
+		OperationType: http.MethodGet,
+		Path:          "/users/:userName/score",
+	})
+
 	return ret
 }
 
