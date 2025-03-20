@@ -1,21 +1,34 @@
-# Step 1: Importing Modules
-# To initiate the DAG Object
 from airflow import DAG
-# Importing datetime and timedelta modules for scheduling the DAGs
-from datetime import timedelta, datetime
+from datetime import datetime
+import random
 # Importing operators 
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
-import random
 
 def calculate_player_scores(**kwargs):
+    # get the user names from the variable
     user_names_var = Variable.get("users")
     user_names = user_names_var.split(",")
 
     #Let's do some processing to simulate score calculation.
+    scores = calculate_scores(user_names)
+
+    # join the scores into a single string and store them in the variable value
+    users = []
+    for user, score in scores.items():
+        users.append("#".join([user, str(score)]))
+    scores_str = "|".join(users)
+    Variable.set("player_scores", scores_str)
+
+
+# This function is currently very simple but you could add more complex logic here if needed that might require a lot of time to process.
+# In this case, Airflow execution will be quite handy since it can be schedule it and run it in the Apache environment 
+# and your API will not suffer any performance issues and degradation.
+def calculate_scores(players):
+    #Let's do some processing to simulate score calculation.
     scores = {}
-    for user in user_names:
+    for user in players:
         # get the current time in epoch format and multiply it by a random number
         current_time = datetime.now().timestamp()
         random_number = random.randint(0, 100)
@@ -24,12 +37,8 @@ def calculate_player_scores(**kwargs):
         score = current_time * random_number
         scores[user] = score
 
-    # join the scores into a single string and store them in the variable value
-    users = []
-    for user, score in scores.items():
-        users.append("#".join([user, str(score)]))
-    scores_str = "|".join(users)
-    Variable.set("player_scores", scores_str)
+    return scores
+
 
 default_args = {
         'owner' : 'airflow',
@@ -48,11 +57,8 @@ calculate_player_scores = PythonOperator(
     dag=dag,
 )
 
-# Step 4: Creating task
-# Creating first task
+# Let's create two dummy operators in between the main one just to play around a bit more
 start = DummyOperator(task_id = 'start', dag = dag)
-# Creating second task 
 end = DummyOperator(task_id = 'end', dag = dag)
 
-# Step 5: Setting up dependencies 
 start >> calculate_player_scores >> end

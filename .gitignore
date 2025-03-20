@@ -29,3 +29,5 @@ logs/
 
 .DS_Store
 dags/__pycache__/
+
+.vscode/

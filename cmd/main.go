@@ -62,58 +62,11 @@ func initHandlers() []HandlerCfg {
 		Path:          "/users/:userName/score",
 	})
 
+	ret = append(ret, HandlerCfg{
+		Func:          usersHandler.TriggerPlayerScoreUpdateManuallyV1,
+		OperationType: http.MethodPost,
+		Path:          "/users/score",
+	})
+
 	return ret
 }
-
-// func main() {
-// 	conf := airflow.NewConfiguration()
-// 	conf.Host = "localhost:8080"
-// 	conf.Scheme = "http"
-// 	cli := airflow.NewAPIClient(conf)
-
-// 	cred := airflow.BasicAuth{
-// 		UserName: "test",
-// 		Password: "password",
-// 	}
-// 	ctx := context.WithValue(context.Background(), airflow.ContextBasicAuth, cred)
-
-// 	dag, resp, err := cli.DAGApi.GetDag(ctx, "example_dag").Execute()
-// 	if resp != nil {
-// 		body := []byte{}
-// 		resp.Body.Read(body)
-// 		fmt.Println(resp.Status + string(body))
-// 	}
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	fmt.Print(dag.DagId)
-
-// 	run := airflow.NewDAGRunWithDefaults()
-// 	_, resp, err = cli.DAGRunApi.PostDagRun(ctx, "example_dag").DAGRun(*run).Execute()
-// 	if resp != nil {
-// 		body := []byte{}
-// 		resp.Body.Read(body)
-// 		fmt.Println(resp.Status + string(body))
-// 	}
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	// variable
-// 	var (
-// 		key string
-// 		val string
-// 	)
-
-// 	key = "users"
-// 	val = strings.Join([]string{"user1", "user2"}, ",")
-// 	_, resp, err = cli.VariableApi.PostVariables(ctx).Variable(airflow.Variable{
-// 		Key:   &key,
-// 		Value: &val,
-// 	}).Execute()
-// 	if resp != nil {
-// 		body := []byte{}
-// 		resp.Body.Read(body)
-// 		fmt.Println(resp.Status + string(body))
-// 	}
-// }

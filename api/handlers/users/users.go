@@ -26,6 +26,7 @@ type UsersHandler struct {
 type AirflowClient interface {
 	PostVariables(ctx context.Context, key, value string) error
 	GetVariable(ctx context.Context, key string) (string, error)
+	TriggerDag(ctx context.Context, dagID string) error
 }
 
 func NewUsersHandler(airflowCli AirflowClient) *UsersHandler {
@@ -54,7 +55,6 @@ func (h UsersHandler) PostUsersV1(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusCreated, req)
-	return
 }
 
 type UsersScoreResp struct {
@@ -81,7 +81,7 @@ func (h UsersHandler) GetUserScoreV1(c *gin.Context) {
 	}
 
 	// split the scores by comma
-	userScores := strings.Split(scores, ",")
+	userScores := strings.Split(scores, "|")
 
 	for _, userScoreStr := range userScores {
 		// split the user score by colon
@@ -105,4 +105,15 @@ func (h UsersHandler) GetUserScoreV1(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+}
+
+func (h *UsersHandler) TriggerPlayerScoreUpdateManuallyV1(c *gin.Context) {
+	// trigger the DAG to update the player scores
+	err := h.airflowCli.TriggerDag(c.Request.Context(), airflow.PlayerScoresCalcDagID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "player scores update triggered"})
 }

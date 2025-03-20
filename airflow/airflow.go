@@ -10,6 +10,7 @@ import (
 const (
 	UserVariableKey         = "users"
 	PlayerScoresVariableKey = "player_scores"
+	PlayerScoresCalcDagID   = "player_score_calculation_dag"
 )
 
 type AirflowClient struct {
@@ -71,4 +72,20 @@ func (c AirflowClient) GetVariable(ctx context.Context, key string) (string, err
 	}
 
 	return *variable.Value, nil
+}
+
+func (c AirflowClient) TriggerDag(ctx context.Context, dagID string) error {
+	ctx = context.WithValue(ctx, airflow.ContextBasicAuth, c.Creds)
+	_, resp, err := c.Cli.DAGRunApi.PostDagRun(ctx, dagID).DAGRun(*airflow.NewDAGRunWithDefaults()).Execute()
+	if resp != nil {
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("error: %s", resp.Status)
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
