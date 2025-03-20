@@ -59,15 +59,15 @@ The API will have the following endpoints:
 
 Before starting the API, we need to start the local Airflow instance. To do this we need to run the following command:
 
-    ```bash
+```bash
     docker-compose up
-    ```
+```
 
 Once that is done, we can start the API by running the following command:
 
-    ```bash
+```bash
     go run cmd/main.go
-    ```
+```
 
 The API will be available at <http://localhost:8080>.
 
