@@ -60,6 +60,8 @@ Before starting the API, we need to start the local **Airflow** instance. To do 
     docker-compose up
 ```
 
+:warning: **LICENSE**: The [docker-compose](./docker-compose.yml) file is entirely owned by the [Apache Airflow](https://airflow.apache.org) project and it's use here is purely done purely for entertainment purposes.
+
 Once that is done, we can start the *API* by running the following command:
 
 ```bash
