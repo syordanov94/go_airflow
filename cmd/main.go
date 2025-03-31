@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	"go-airflow/airflow"
 	"go-airflow/api/handlers/users"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,7 +45,7 @@ type HandlerCfg struct {
 
 func initHandlers() []HandlerCfg {
 
-	// TODO: Don't init the client with hardcoded values
+	// TODO: Don't init the client with hardcoded values. Use a config file or env vars.
 	aifrlowCli := airflow.NewAirflowCli("localhost:8080", "http", "airflow", "airflow")
 
 	ret := []HandlerCfg{}

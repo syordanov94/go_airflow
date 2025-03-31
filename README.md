@@ -72,7 +72,7 @@ The API will be available at <http://localhost:8080>.
 
 ## Helpful Tips
 
-- You can visualize the *DAG* execution in the apache airflow UI by going to <http://localhost:8080> and logging in with the credentials `admin:admin`.
+- You can visualize the *DAG* execution in the apache airflow UI by going to <http://localhost:8080> and logging in with the credentials `airflow:airflow`.
 
 ## Helpful Links
 

@@ -2,14 +2,31 @@ package users
 
 import (
 	"context"
-	"go-airflow/airflow"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"go-airflow/airflow"
+
 	"github.com/gin-gonic/gin"
 	"github.com/life4/genesis/slices"
 )
+
+type AirflowClient interface {
+	PostVariables(ctx context.Context, key, value string) error
+	GetVariable(ctx context.Context, key string) (string, error)
+	TriggerDag(ctx context.Context, dagID string) error
+}
+
+type UsersHandler struct {
+	airflowCli AirflowClient
+}
+
+func NewUsersHandler(airflowCli AirflowClient) *UsersHandler {
+	return &UsersHandler{
+		airflowCli: airflowCli,
+	}
+}
 
 type UsersReq struct {
 	Users []User `json:"users"`
@@ -19,22 +36,6 @@ type User struct {
 	Name string `json:"name"`
 }
 
-type UsersHandler struct {
-	airflowCli AirflowClient
-}
-
-type AirflowClient interface {
-	PostVariables(ctx context.Context, key, value string) error
-	GetVariable(ctx context.Context, key string) (string, error)
-	TriggerDag(ctx context.Context, dagID string) error
-}
-
-func NewUsersHandler(airflowCli AirflowClient) *UsersHandler {
-	return &UsersHandler{
-		airflowCli: airflowCli,
-	}
-}
-
 func (h UsersHandler) PostUsersV1(c *gin.Context) {
 	var req UsersReq
 	if err := c.BindJSON(&req); err != nil {
@@ -42,12 +43,13 @@ func (h UsersHandler) PostUsersV1(c *gin.Context) {
 		return
 	}
 
-	// create a list of all the user names and join them with a comma
+	// create a list of all the usernames and join them with a comma
 	users := slices.Map(req.Users, func(user User) string {
 		return user.Name
 	})
-
 	val := strings.Join(users, ",")
+
+	// post the users to the airflow API
 	err := h.airflowCli.PostVariables(c.Request.Context(), airflow.UserVariableKey, val)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -67,14 +69,14 @@ type UserScore struct {
 }
 
 func (h UsersHandler) GetUserScoreV1(c *gin.Context) {
-	// get the users from the request
+	// get the requested username from the request
 	userName, found := c.Params.Get("userName")
 	if !found {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "user name not found"})
 		return
 	}
 
-	// get the user scores from the airflow API
+	// get the user scores from airflow
 	scores, err := h.airflowCli.GetVariable(c.Request.Context(), airflow.PlayerScoresVariableKey)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -84,7 +86,7 @@ func (h UsersHandler) GetUserScoreV1(c *gin.Context) {
 	userScores := strings.Split(scores, "|")
 
 	for _, userScoreStr := range userScores {
-		// split the user score by colon
+		// split the user score by colon and check if the username matches the requested one
 		userScore := strings.Split(userScoreStr, "#")
 		if userScore[0] == userName {
 			score, err := strconv.ParseFloat(userScore[1], 64)
